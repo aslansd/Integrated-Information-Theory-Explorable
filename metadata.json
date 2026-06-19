@@ -1,0 +1,6 @@
+{
+  "name": "Integrated Information Theory Explorable",
+  "description": "An interactive explorable explanation of Integrated Information Theory (IIT) and the science of consciousness, designed in the active-learning style of Nicky Case.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
