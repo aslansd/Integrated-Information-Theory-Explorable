@@ -1,80 +1,83 @@
 import { motion } from 'motion/react';
-import { Sparkles, BrainCircuit, Activity } from 'lucide-react';
+import { Sparkles, BrainCircuit, Activity, Info } from 'lucide-react';
+
+/**
+ * Highest Φ this toy measure can produce for a 3-element network with the
+ * available gates (fully recurrent, all NOT/NOR, quiescent state). Verified by
+ * exhaustive search over all wirings, gates and states.
+ */
+export const MAX_PHI = 1.75;
 
 interface GaugeProps {
   phi: number;
+  /** Explanation shown when Φ is pinned to zero for a structural reason. */
+  note?: string | null;
 }
 
-export default function Gauge({ phi }: GaugeProps) {
-  // Max expected phi in these simple 3-node graphs is around 1.5 - 2.0. Let's set the max gauge value at 1.5.
-  const maxPhi = 1.5;
-  const percentage = Math.min((phi / maxPhi) * 100, 100);
+export default function Gauge({ phi, note }: GaugeProps) {
+  const percentage = Math.max(0, Math.min((phi / MAX_PHI) * 100, 100));
 
-  // SVG parameters for radial gauge
   const radius = 80;
   const strokeWidth = 14;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
-  // Determine state labels & styling
-  let label = 'Isolated Clusters';
-  let desc = 'No active feedback system. Parts behave independently.';
-  let borderColors = 'from-slate-400 to-slate-500 text-slate-400 shadow-slate-100';
-  let bgGradient = 'from-slate-50 to-slate-100 border-slate-200';
-  let accentClass = 'text-slate-600 bg-slate-200/50';
+  let label = 'Isolated Parts';
+  let desc = 'No irreducible whole here: the system splits along a free seam.';
+  let accentClass = 'text-slate-400 bg-slate-800/70';
+  let arcStroke = '#64748b';
 
-  if (phi > 0 && phi <= 0.3) {
+  if (phi > 0 && phi <= 0.5) {
     label = 'Dim Whispers';
-    desc = 'Weak feedback loops exist, creating a tiny unified resonance.';
-    borderColors = 'from-emerald-400 to-teal-500 text-emerald-500 shadow-emerald-100';
-    bgGradient = 'from-emerald-50/40 to-teal-50/40 border-emerald-100/80';
-    accentClass = 'text-teal-700 bg-emerald-100/60';
-  } else if (phi > 0.3 && phi < 0.9) {
-    label = 'Integrated Symphony';
-    desc = 'Stronger feedback and logical filters create a coherent sensory whole.';
-    borderColors = 'from-sky-400 to-indigo-500 text-indigo-500 shadow-sky-100';
-    bgGradient = 'from-sky-50/40 to-indigo-50/40 border-sky-100/80';
-    accentClass = 'text-indigo-800 bg-indigo-100/60';
-  } else if (phi >= 0.9) {
-    label = 'Ethereal Cosmic Core';
-    desc = 'Maximum recurrent loops and complex gates. High-unity consciousness!';
-    borderColors = 'from-fuchsia-400 via-purple-500 to-pink-500 text-purple-600 shadow-fuchsia-100';
-    bgGradient = 'from-fuchsia-50/50 via-purple-50/30 to-pink-50/30 border-purple-200/80';
-    accentClass = 'text-purple-900 bg-purple-100/70 animate-pulse';
+    desc = 'A weak loop exists. The parts constrain each other, but only barely.';
+    accentClass = 'text-teal-300 bg-teal-950/60';
+    arcStroke = 'url(#teal-grad)';
+  } else if (phi > 0.5 && phi < 1.5) {
+    label = 'Integrated Whole';
+    desc = 'Recurrent wiring plus differentiated gates: no cheap way to cut this apart.';
+    accentClass = 'text-indigo-300 bg-indigo-950/60';
+    arcStroke = 'url(#indigo-grad)';
+  } else if (phi >= 1.5) {
+    label = 'Maximally Irreducible';
+    desc = 'Every possible split is expensive. This is as unified as three elements get.';
+    accentClass = 'text-fuchsia-300 bg-fuchsia-950/60';
+    arcStroke = 'url(#rainbow-grad)';
   }
 
   return (
-    <div className={`p-6 rounded-2xl border transition-all duration-500 shadow-sm bg-gradient-to-b ${bgGradient} flex flex-col items-center justify-between h-full`}>
-      <div className="w-full flex items-center justify-between mb-2">
-        <span className="text-xs font-semibold tracking-wider text-slate-500 uppercase flex items-center gap-1.5 font-sans">
-          <Activity className="w-3.5 h-3.5 animate-pulse text-indigo-500" />
-          Consciousness Gauge
+    <div className="p-6 rounded-2xl border border-slate-800 bg-slate-900 transition-all duration-500 flex flex-col items-center justify-between h-full">
+      <div className="w-full flex items-center justify-between gap-2 mb-2">
+        <span className="text-[10px] font-bold tracking-widest text-slate-500 uppercase flex items-center gap-1.5 font-mono">
+          <Activity className="w-3.5 h-3.5 text-indigo-400" aria-hidden="true" />
+          Integration Gauge
         </span>
-        <div className={`text-[10px] px-2.5 py-1 rounded-full font-bold tracking-tight font-sans ${accentClass} flex items-center gap-1`}>
-          {phi >= 0.9 && <Sparkles className="w-3 h-3 text-fuchsia-500" />}
-          {phi > 0 && phi < 0.9 && <BrainCircuit className="w-3 h-3 text-indigo-500" />}
+        <div
+          className={`text-[10px] px-2.5 py-1 rounded-full font-bold tracking-tight font-sans ${accentClass} flex items-center gap-1 shrink-0`}
+        >
+          {phi >= 1.5 && <Sparkles className="w-3 h-3" aria-hidden="true" />}
+          {phi > 0 && phi < 1.5 && <BrainCircuit className="w-3 h-3" aria-hidden="true" />}
           {label}
         </div>
       </div>
 
-      <div className="relative flex items-center justify-center my-4">
-        {/* SVG Circle Gauge */}
-        <svg className="w-48 h-48 transform -rotate-90" viewBox="0 0 200 200">
-          {/* Background circle */}
+      <div
+        className="relative flex items-center justify-center my-4"
+        role="img"
+        aria-label={`Phi equals ${phi.toFixed(2)} out of a maximum of ${MAX_PHI}. ${label}.`}
+      >
+        <svg className="w-48 h-48 -rotate-90" viewBox="0 0 200 200" aria-hidden="true">
           <circle
             cx="100"
             cy="100"
             r={radius}
-            className="stroke-slate-200/60"
+            className="stroke-slate-800"
             strokeWidth={strokeWidth}
             fill="transparent"
           />
-          {/* Dynamic Arc */}
           <motion.circle
             cx="100"
             cy="100"
             r={radius}
-            className="stroke-indigo-600"
             strokeWidth={strokeWidth}
             fill="transparent"
             strokeDasharray={circumference}
@@ -82,17 +85,10 @@ export default function Gauge({ phi }: GaugeProps) {
             animate={{ strokeDashoffset }}
             transition={{ type: 'spring', stiffness: 60, damping: 15 }}
             strokeLinecap="round"
-            style={{
-              stroke: phi >= 0.9 
-                ? 'url(#rainbow-grad)' 
-                : phi > 0.3 
-                ? 'url(#indigo-grad)' 
-                : phi > 0 
-                ? 'url(#teal-grad)' 
-                : '#94a3b8'
-            }}
+            /* Set as an attribute, not via `style`: motion caches inline styles
+               and would keep the colour from the first render forever. */
+            stroke={arcStroke}
           />
-          {/* Gradients */}
           <defs>
             <linearGradient id="teal-grad" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#2dd4bf" />
@@ -110,25 +106,34 @@ export default function Gauge({ phi }: GaugeProps) {
           </defs>
         </svg>
 
-        {/* Inner Text Block */}
         <div className="absolute text-center flex flex-col items-center">
-          <motion.span 
+          <motion.span
             key={phi}
-            initial={{ scale: 0.8, opacity: 0.5 }}
+            initial={{ scale: 0.85, opacity: 0.6 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="text-4xl font-extrabold tracking-tight text-slate-800 font-mono"
+            className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white font-mono leading-none"
           >
-            Φ = {phi.toFixed(2)}
+            {phi.toFixed(2)}
           </motion.span>
-          <span className="text-[11px] font-medium text-slate-400 mt-1 uppercase tracking-widest font-sans">
-            phi quantity
+          <span className="text-[11px] font-bold text-indigo-300 font-mono tracking-widest mt-1">
+            Φ
+          </span>
+          <span className="text-[9px] font-medium text-slate-500 mt-1.5 uppercase tracking-widest font-sans">
+            max {MAX_PHI}
           </span>
         </div>
       </div>
 
-      <p className="text-center text-xs text-slate-500 leading-relaxed font-sans max-w-xs px-2 mt-2 h-10 flex items-center justify-center">
+      <p className="text-center text-[11px] text-slate-400 leading-relaxed font-sans max-w-xs px-2 mt-2 min-h-10 flex items-center justify-center">
         {desc}
       </p>
+
+      {note && (
+        <div className="mt-3 w-full flex items-start gap-2 rounded-xl border border-slate-800 bg-slate-950/60 p-2.5">
+          <Info className="w-3.5 h-3.5 text-indigo-400 shrink-0 mt-0.5" aria-hidden="true" />
+          <p className="text-[10px] leading-relaxed text-slate-400">{note}</p>
+        </div>
+      )}
     </div>
   );
 }
